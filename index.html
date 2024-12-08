@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BulkSend Application Documentation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 70px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .table-of-contents a {
+            text-decoration: none;
+            color: #0d6efd;
+        }
+        .table-of-contents a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="70" tabindex="0">
+
+    <!-- Navigation Bar -->
+    <nav id="navbar-example" class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">BulkSend POC</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" 
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#introduction">Introduction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#high-level-design">High-Level Design</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#low-level-design">Low-Level Design</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#detailed-component-analysis">Detailed Component Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#workflow-and-data-flow">Workflow and Data Flow</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#uml-diagrams">UML Diagrams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#flow-charts">Flow Charts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#configuration-and-setup">Configuration and Setup</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#running-the-application">Running the Application</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#extending-the-application">Extending the Application</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#conclusion">Conclusion</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#download-the-project">Download</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-4">
+
+        <!-- Table of Contents -->
+        <section id="table-of-contents" class="mb-5">
+            <h2>Table of Contents</h2>
+            <ol class="table-of-contents">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#high-level-design">High-Level Design</a></li>
+                <li><a href="#low-level-design">Low-Level Design</a></li>
+                <li><a href="#detailed-component-analysis">Detailed Component Analysis</a></li>
+                <li><a href="#workflow-and-data-flow">Workflow and Data Flow</a></li>
+                <li><a href="#configuration-and-setup">Configuration and Setup</a></li>
+                <li><a href="#uml-diagrams">UML Diagrams</a></li>
+                <li><a href="#flow-charts">Flow Charts</a></li>
+                <li><a href="#running-the-application">Running the Application</a></li>
+                <li><a href="#extending-the-application">Extending the Application</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+            </ol>
+            <hr>
+        </section>
+
+        <!-- Introduction -->
+        <section id="introduction" class="mb-5">
+            <h2>Introduction</h2>
+            <p><strong>BulkSend</strong> is a versatile application designed to send bulk emails efficiently using Azure Functions and Redis as a message broker. The application provides two entry points for initiating the email sending process: a console application and an Azure Function. This dual-entry-point approach offers flexibility in how users can trigger bulk email operations, catering to both automated and manual workflows.</p>
+            <p>This document provides a comprehensive overview of the BulkSend application, including its architecture, components, workflows, setup instructions, and guidelines for future extensions such as SMS and notifications.</p>
+            <hr>
+        </section>
+
+        <!-- High-Level Design -->
+        <section id="high-level-design" class="mb-5">
+            <h2>High-Level Design</h2>
+            
+            <h3>Architecture Overview</h3>
+            <p>BulkSend leverages a serverless architecture facilitated by Azure Functions, ensuring scalability and cost-effectiveness. Redis serves as the message broker, managing the queue of email tasks. The application interacts with SendGrid for email delivery, ensuring reliable and efficient dispatch of bulk emails.</p>
+            
+            <h4>Key Components:</h4>
+            <ul>
+                <li><strong>Azure Functions:</strong> Serverless compute platform handling HTTP requests and processing queued tasks.</li>
+                <li><strong>Redis:</strong> In-memory data structure store used as a message broker for queuing email tasks.</li>
+                <li><strong>SendGrid:</strong> Cloud-based email delivery service responsible for sending emails.</li>
+                <li><strong>Console Application:</strong> Provides an alternative entry point for initiating bulk email tasks.</li>
+            </ul>
+
+            <h3>Architectural Diagram</h3>
+            <div class="text-center">
+                <img src="Figure 1 High-Level Architecture of BulkSend Application.png" alt="High-Level Architecture Diagram" class="img-fluid">
+                <p><em>Figure 1: High-Level Architecture of BulkSend Application</em></p>
+            </div>
+            <hr>
+        </section>
+
+        <!-- Low-Level Design -->
+        <section id="low-level-design" class="mb-5">
+            <h2>Low-Level Design</h2>
+            
+            <h3>Component Interactions</h3>
+            <ol>
+                <li>
+                    <strong>Entry Points:</strong>
+                    <ul>
+                        <li><strong>Console Application:</strong> Users can manually initiate bulk email tasks by running the console application, which enqueues email tasks into Redis.</li>
+                        <li><strong>Azure Function (HTTP Trigger):</strong> Users can send an HTTP POST request to trigger bulk email tasks, which are then enqueued into Redis.</li>
+                    </ul>
+                </li>
+                <li><strong>Message Broker (Redis):</strong> Acts as an intermediary, holding email tasks until they are processed by the consumer.</li>
+                <li><strong>Email Producer (RedisProducer):</strong> Publishes email tasks to the Redis queue, serializing email details into JSON format.</li>
+                <li><strong>Email Consumer (RedisConsumer):</strong> Continuously monitors the Redis queue, dequeues email tasks, and processes them by sending emails via SendGrid.</li>
+                <li><strong>Configuration Management (ConfigHelper):</strong> Loads configuration and data from JSON files, ensuring that the application can be easily configured and maintained.</li>
+            </ol>
+
+            <h3>Class Diagram</h3>
+            <pre>
+<code>
+@startuml
+package "bulksend" {
+    class RedisProducer {
+        - ConnectionMultiplexer _redis
+        - string _queueName
+        + RedisProducer(string redisConnectionString, string queueName)
+        + void PublishEmailBatch(IEnumerable&lt;string&gt; emails, string subject, string content)
+    }
+
+    class RedisConsumer {
+        - ConnectionMultiplexer _redis
+        - string _queueName
+        - string _sendGridApiKey
+        + RedisConsumer(string redisConnectionString, string queueName, string sendGridApiKey)
+        + Task StartConsuming(string senderEmail, string senderName, string subject, string content)
+        - Task ProcessTaskAsync(string serializedTask, string senderEmail, string senderName, string subject, string content)
+        - Task SendEmails(string[] emails, string senderEmail, string senderName, string subject, string content)
+    }
+
+    class ConfigHelper {
+        + static T LoadFromJsonFile&lt;T&gt;(string fileName)
+    }
+
+    class Sender {
+        + string SenderEmail
+        + string SenderName
+    }
+
+    class Template {
+        + string Subject
+        + string ContentTemplate
+    }
+
+    class Recipient {
+        + string Email
+        + string Salutation
+    }
+
+    class AppConfig {
+        + RedisConfig Redis
+        + SendGridConfig SendGrid
+    }
+
+    class RedisConfig {
+        + string ConnectionString
+        + string QueueName
+    }
+
+    class SendGridConfig {
+        + string ApiKey
+    }
+}
+
+RedisConsumer --> SendGridConfig
+RedisProducer --> RedisConfig
+AppConfig --> RedisConfig
+AppConfig --> SendGridConfig
+@enduml
+</code>
+            </pre>
+            <div class="text-center">
+                <img src="Figure 2  Class Diagram of BulkSend Application.png" alt="Class Diagram" class="img-fluid">
+                <p><em>Figure 2: Class Diagram of BulkSend Application</em></p>
+            </div>
+            <hr>
+        </section>
+
+        <!-- Detailed Component Analysis -->
+        <section id="detailed-component-analysis" class="mb-5">
+            <h2>Detailed Component Analysis</h2>
+            
+            <!-- 1. Azure Function: RedisEmailConsumerFunction -->
+            <h3>1. Azure Function: RedisEmailConsumerFunction</h3>
+            <h4>Purpose:</h4>
+            <p>Handles HTTP POST requests to enqueue bulk email tasks into Redis and initiates the consumption of these tasks for processing.</p>
+            
+            <h4>Key Responsibilities:</h4>
+            <ul>
+                <li><strong>Load Configurations:</strong> Reads <code>config.json</code>, <code>sender.json</code>, <code>template.json</code>, and <code>recipients.json</code> to retrieve necessary configurations and data.</li>
+                <li><strong>Enqueue Email Tasks:</strong> Publishes email tasks to Redis for each recipient using <code>RedisProducer</code>.</li>
+                <li><strong>Consume Email Tasks:</strong> Initiates <code>RedisConsumer</code> to process and send emails via SendGrid.</li>
+            </ul>
+
+            <h4>Code Overview:</h4>
+            <pre>
+<code>
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+namespace bulksend
+{
+    public static class RedisEmailConsumerFunction
+    {
+        [FunctionName("RedisEmailConsumerHttpTrigger")]
+        public static async Task&lt;IActionResult&gt; RunHttpTrigger(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation($"[{DateTime.Now}] HTTP Trigger: RedisEmailConsumer invoked.");
+            Console.WriteLine($"[{DateTime.Now}] HTTP Trigger: RedisEmailConsumer invoked.");
+
+            AppConfig config;
+            Sender sender;
+            Template template;
+            List&lt;Recipient&gt; recipients;
+
+            try
+            {
+                log.LogInformation($"[{DateTime.Now}] Loading configuration and JSON data files...");
+                Console.WriteLine($"[{DateTime.Now}] Loading configuration and JSON data files...");
+
+                // Load configuration and data from JSON files
+                config = ConfigHelper.LoadFromJsonFile&lt;AppConfig&gt;("config.json");
+                sender = ConfigHelper.LoadFromJsonFile&lt;Sender&gt;("sender.json");
+                template = ConfigHelper.LoadFromJsonFile&lt;Template&gt;("template.json");
+                recipients = ConfigHelper.LoadFromJsonFile&lt;List&lt;Recipient&gt;&gt;("recipients.json");
+
+                log.LogInformation($"[{DateTime.Now}] Successfully loaded configuration and JSON data files.");
+                Console.WriteLine($"[{DateTime.Now}] Successfully loaded configuration and JSON data files.");
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"[{DateTime.Now}] Error loading configuration or JSON data files: {ex.Message}");
+                Console.WriteLine($"[{DateTime.Now}] Error loading configuration or JSON data files: {ex.Message}");
+                return new BadRequestObjectResult($"Error loading configuration or JSON data files: {ex.Message}");
+            }
+
+            try
+            {
+                log.LogInformation($"[{DateTime.Now}] Publishing tasks to Redis for {recipients.Count} recipients...");
+                Console.WriteLine($"[{DateTime.Now}] Publishing tasks to Redis for {recipients.Count} recipients...");
+
+                // Publish tasks to Redis
+                var producer = new RedisProducer(config.Redis.ConnectionString, config.Redis.QueueName);
+                Parallel.ForEach(recipients, recipient =>
+                {
+                    string personalizedContent = template.ContentTemplate.Replace("{{salutation}}", recipient.Salutation);
+
+                    producer.PublishEmailBatch(
+                        new List&lt;string&gt; { recipient.Email },
+                        template.Subject,
+                        personalizedContent
+                    );
+
+                    log.LogInformation($"[{DateTime.Now}] Task published to Redis for recipient: {recipient.Email}");
+                    Console.WriteLine($"[{DateTime.Now}] Task published to Redis for recipient: {recipient.Email}");
+                });
+
+                log.LogInformation($"[{DateTime.Now}] Successfully published tasks to Redis.");
+                Console.WriteLine($"[{DateTime.Now}] Successfully published tasks to Redis.");
+
+                // Start consuming tasks from Redis
+                log.LogInformation($"[{DateTime.Now}] Starting to process tasks from Redis...");
+                Console.WriteLine($"[{DateTime.Now}] Starting to process tasks from Redis...");
+
+                var consumer = new RedisConsumer(config.Redis.ConnectionString, config.Redis.QueueName, config.SendGrid.ApiKey);
+                await consumer.StartConsuming(
+                    sender.SenderEmail,
+                    sender.SenderName,
+                    template.Subject,
+                    template.ContentTemplate
+                );
+
+                log.LogInformation($"[{DateTime.Now}] Redis email consumer completed successfully.");
+                Console.WriteLine($"[{DateTime.Now}] Redis email consumer completed successfully.");
+                return new OkObjectResult("Redis email consumer process completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"[{DateTime.Now}] Error processing tasks from Redis: {ex.Message}");
+                Console.WriteLine($"[{DateTime.Now}] Error processing tasks from Redis: {ex.Message}");
+                return new StatusCodeResult(500);
+            }
+        }
+    }
+}
+</code>
+            </pre>
+
+            <!-- Additional Components (RedisProducer, RedisConsumer, ConfigHelper) would follow similar structure -->
+
+            <hr>
+        </section>
+
+        <!-- Workflow and Data Flow -->
+        <section id="workflow-and-data-flow" class="mb-5">
+            <h2>Workflow and Data Flow</h2>
+            
+            <h3>Workflow Steps</h3>
+            <ol>
+                <li><strong>Initiate Bulk Email Task:</strong>
+                    <ul>
+                        <li><strong>Console Application:</strong> User runs the console app, which invokes the <code>RedisEmailConsumerFunction</code> via the console.</li>
+                        <li><strong>Azure Function:</strong> User sends an HTTP POST request to trigger the <code>RedisEmailConsumerHttpTrigger</code> function.</li>
+                    </ul>
+                </li>
+                <li><strong>Load Configurations and Data:</strong>
+                    <p>The function reads <code>config.json</code>, <code>sender.json</code>, <code>template.json</code>, and <code>recipients.json</code> to gather necessary information.</p>
+                </li>
+                <li><strong>Enqueue Email Tasks:</strong>
+                    <ul>
+                        <li>For each recipient, a personalized email task is created by replacing the <code>{{salutation}}</code> placeholder in the template.</li>
+                        <li>The <code>RedisProducer</code> publishes these tasks to the Redis queue named <code>emailTasks</code>.</li>
+                    </ul>
+                </li>
+                <li><strong>Consume and Process Email Tasks:</strong>
+                    <ul>
+                        <li>The <code>RedisConsumer</code> listens to the <code>emailTasks</code> queue.</li>
+                        <li>Upon receiving a task, it deserializes the JSON data and sends emails via SendGrid.</li>
+                        <li>Utilizes Polly for retry policies in case of transient failures.</li>
+                    </ul>
+                </li>
+                <li><strong>Logging and Monitoring:</strong>
+                    <p>Throughout the process, logs are generated to monitor the status of task enqueuing, processing, and email dispatch.</p>
+                </li>
+            </ol>
+
+            <h3>Data Flow Diagram</h3>
+            <div class="text-center">
+                <img src="Figure 3 Data Flow Diagram of BulkSend Application.png" alt="Data Flow Diagram" class="img-fluid">
+                <p><em>Figure 3: Data Flow Diagram of BulkSend Application</em></p>
+            </div>
+            <hr>
+        </section>
+
+        <!-- UML Diagrams -->
+        <section id="uml-diagrams" class="mb-5">
+            <h2>UML Diagrams</h2>
+            
+            <!-- 1. Component Diagram -->
+            <h3>1. Component Diagram</h3>
+            <p><strong>Description:</strong> Illustrates the high-level components of the BulkSend application and their interactions.</p>
+            <pre>
+<code>
+@startuml
+package "bulksend" {
+    [RedisEmailConsumerFunction] --> [RedisProducer]
+    [RedisEmailConsumerFunction] --> [RedisConsumer]
+    [RedisProducer] --> [Redis]
+    [RedisConsumer] --> [SendGrid]
+}
+database "Redis" as Redis
+cloud "SendGrid" as SendGrid
+@enduml
+</code>
+            </pre>
+            <div class="text-center">
+                <img src="SendGrid.png" alt="Component Diagram" class="img-fluid">
+                <p><em>Figure 4: Component Diagram of BulkSend Application</em></p>
+            </div>
+
+            <!-- 2. Class Diagram -->
+            <h3>2. Class Diagram</h3>
+            <p><strong>Description:</strong> Details the classes, interfaces, and their relationships within the BulkSend application.</p>
+            <pre>
+<code>
+@startuml
+package "bulksend" {
+    class RedisProducer {
+        - ConnectionMultiplexer _redis
+        - string _queueName
+        + RedisProducer(string redisConnectionString, string queueName)
+        + void PublishEmailBatch(IEnumerable&lt;string&gt; emails, string subject, string content)
+    }
+
+    class RedisConsumer {
+        - ConnectionMultiplexer _redis
+        - string _queueName
+        - string _sendGridApiKey
+        + RedisConsumer(string redisConnectionString, string queueName, string sendGridApiKey)
+        + Task StartConsuming(string senderEmail, string senderName, string subject, string content)
+        - Task ProcessTaskAsync(string serializedTask, string senderEmail, string senderName, string subject, string content)
+        - Task SendEmails(string[] emails, string senderEmail, string senderName, string subject, string content)
+    }
+
+    class ConfigHelper {
+        + static T LoadFromJsonFile&lt;T&gt;(string fileName)
+    }
+
+    class Sender {
+        + string SenderEmail
+        + string SenderName
+    }
+
+    class Template {
+        + string Subject
+        + string ContentTemplate
+    }
+
+    class Recipient {
+        + string Email
+        + string Salutation
+    }
+
+    class AppConfig {
+        + RedisConfig Redis
+        + SendGridConfig SendGrid
+    }
+
+    class RedisConfig {
+        + string ConnectionString
+        + string QueueName
+    }
+
+    class SendGridConfig {
+        + string ApiKey
+    }
+}
+
+RedisConsumer --> SendGridConfig
+RedisProducer --> RedisConfig
+AppConfig --> RedisConfig
+AppConfig --> SendGridConfig
+@enduml
+</code>
+            </pre>
+            <div class="text-center">
+                <img src="Figure 5 Class Diagram of BulkSend Application.png" alt="Class Diagram" class="img-fluid">
+                <p><em>Figure 5: Class Diagram of BulkSend Application</em></p>
+            </div>
+
+            <!-- 3. Sequence Diagram -->
+            <h3>3. Sequence Diagram</h3>
+            <p><strong>Description:</strong> Depicts the sequence of interactions when processing and sending bulk emails.</p>
+            <pre>
+<code>
+@startuml
+actor User
+participant "RedisEmailConsumerFunction" as Function
+participant "RedisProducer" as Producer
+participant "Redis" as Redis
+participant "RedisConsumer" as Consumer
+participant "SendGrid" as SendGrid
+
+User -> Function: POST /api/RedisEmailConsumerHttpTrigger
+Function -> Function: Load configurations from JSON files
+Function -> Producer: PublishEmailBatch for each recipient
+Producer -> Redis: Enqueue email task
+Function -> User: 200 OK
+
+Function -> Consumer: StartConsuming
+Consumer -> Redis: Dequeue email task
+Redis -> Consumer: Return email task
+Consumer -> SendGrid: Send email via API
+SendGrid --> Consumer: Response
+@enduml
+</code>
+            </pre>
+            <div class="text-center">
+                <img src="Figure 6 Sequence Diagram of BulkSend Application.png" alt="Sequence Diagram" class="img-fluid">
+                <p><em>Figure 6: Sequence Diagram of BulkSend Application</em></p>
+            </div>
+            <hr>
+        </section>
+
+        <!-- Flow Charts -->
+        <section id="flow-charts" class="mb-5">
+            <h2>Flow Charts</h2>
+            
+            <!-- 1. Bulk Email Sending Process -->
+            <h3>1. Bulk Email Sending Process</h3>
+            <pre>
+<code>
+@startuml
+start
+:Initiate Bulk Email Task;
+if (Entry Point?) then (Console)
+    :Run Console Application;
+else (Azure Function)
+    :Send HTTP POST Request;
+endif
+:Load Configurations and Data;
+:Enqueue Email Tasks to Redis;
+:Redis Consumer Dequeues Task;
+:Process and Send Emails via SendGrid;
+if (Success?) then (Yes)
+    :Log Success;
+else (No)
+    :Handle Failure (Retry/DLQ);
+endif
+stop
+@enduml
+</code>
+            </pre>
+            <div class="text-center">
+                <img src="Figure 7 Flow Chart of Bulk Email Sending Process.png" alt="Flow Chart" class="img-fluid">
+                <p><em>Figure 7: Flow Chart of Bulk Email Sending Process</em></p>
+            </div>
+            <hr>
+        </section>
+
+        <!-- Configuration and Setup -->
+        <section id="configuration-and-setup" class="mb-5">
+            <h2>Configuration and Setup</h2>
+            
+            <h3>1. Prerequisites</h3>
+            <ul>
+                <li><strong>.NET SDK 8.0:</strong> Ensure that .NET 8.0 SDK is installed on your machine.</li>
+                <li><strong>Azure Functions Core Tools:</strong> Install the latest version compatible with your operating system.</li>
+                <li><strong>Redis Server:</strong> A running instance of Redis accessible via the configured connection string.</li>
+                <li><strong>SendGrid Account:</strong> Valid API key with a verified sender email.</li>
+                <li><strong>Twilio Account (for future SMS extension):</strong> Valid Account SID, Auth Token, and a verified sender phone number.</li>
+            </ul>
+
+            <h3>2. Project Structure</h3>
+            <pre>
+bulksend/
+├── Config/
+│   ├── config.json
+│   ├── sender.json
+│   ├── template.json
+│   └── recipients.json
+├── bin/
+├── obj/
+├── bulksend.csproj
+├── RedisEmailConsumerFunction.cs
+├── RedisProducer.cs
+├── RedisConsumer.cs
+├── JsonHelper.cs
+├── Sender.cs
+├── Template.cs
+├── Recipient.cs
+└── ConfigHelper.cs
+</pre>
+
+            <h3>3. Configuration Files</h3>
+            <p>Ensure that all configuration files (<code>config.json</code>, <code>sender.json</code>, <code>template.json</code>, <code>recipients.json</code>) are placed within the <code>Config</code> directory at the root of the project.</p>
+            <p><strong>Example Configuration Paths:</strong></p>
+            <ul>
+                <li><code>bulksend/Config/config.json</code></li>
+                <li><code>bulksend/Config/sender.json</code></li>
+                <li><code>bulksend/Config/template.json</code></li>
+                <li><code>bulksend/Config/recipients.json</code></li>
+            </ul>
+
+            <h3>4. Loading Configuration Files</h3>
+            <p>The application uses the <code>ConfigHelper</code> class to load and deserialize JSON configuration files. Ensure that the file paths are correctly referenced relative to the application's base directory.</p>
+            <h4>Code Snippet:</h4>
+            <pre>
+<code>
+public static T LoadFromJsonFile&lt;T&gt;(string fileName)
+{
+    string basePath = AppContext.BaseDirectory;
+    string filePath = Path.Combine(basePath, "Config", fileName);
+
+    if (!File.Exists(filePath))
+    {
+        throw new FileNotFoundException($"File not found: {filePath}");
+    }
+
+    try
+    {
+        string jsonContent = File.ReadAllText(filePath);
+        return JsonSerializer.Deserialize&lt;T&gt;(jsonContent)
+               ?? throw new InvalidOperationException("Failed to deserialize JSON data.");
+    }
+    catch (JsonException ex)
+    {
+        throw new InvalidOperationException($"Error parsing JSON file {fileName}: {ex.Message}");
+    }
+}
+</code>
+            </pre>
+            <hr>
+        </section>
+
+        <!-- UML Diagrams Section Repeated? It seems the user had multiple UML Diagrams sections. To avoid repetition, skip or adjust accordingly. -->
+
+        <!-- Running the Application -->
+        <section id="running-the-application" class="mb-5">
+            <h2>Running the Application</h2>
+            
+            <h3>1. Setup Instructions</h3>
+            <ol>
+                <li><strong>Clone the Repository (if applicable):</strong>
+                    <pre><code>git clone https://github.com/yourusername/bulksend.git
+cd bulksend</code></pre>
+                </li>
+                <li><strong>Ensure Configuration Files Are in Place:</strong>
+                    <p>Verify that the <code>Config</code> folder contains <code>config.json</code>, <code>sender.json</code>, <code>template.json</code>, and <code>recipients.json</code>.</p>
+                </li>
+                <li><strong>Restore Dependencies:</strong>
+                    <pre><code>dotnet restore</code></pre>
+                </li>
+                <li><strong>Build the Project:</strong>
+                    <pre><code>dotnet build</code></pre>
+                </li>
+            </ol>
+
+            <h3>2. Running via Console Application</h3>
+            <p><em>(Assuming a separate console application exists for BulkSend)</em></p>
+            <ol>
+                <li><strong>Navigate to the Console Application Directory:</strong>
+                    <pre><code>cd bulksend.ConsoleApp</code></pre>
+                </li>
+                <li><strong>Run the Console Application:</strong>
+                    <pre><code>dotnet run</code></pre>
+                    <p><strong>Expected Output:</strong></p>
+                    <pre>
+[Timestamp] Console Trigger: RedisEmailConsumer invoked.
+[Timestamp] Loading configuration and JSON data files...
+[Timestamp] Successfully loaded configuration and JSON data files.
+[Timestamp] Publishing tasks to Redis for X recipients...
+[Timestamp] Task published to Redis for recipient: email@example.com
+...
+[Timestamp] Successfully published tasks to Redis.
+[Timestamp] Starting to process tasks from Redis...
+[Timestamp] Email sent to email@example.com
+...
+[Timestamp] Redis email consumer completed successfully.
+                    </pre>
+                </li>
+            </ol>
+
+            <h3>3. Running via Azure Function</h3>
+            <ol>
+                <li><strong>Ensure Azure Functions Core Tools Are Installed:</strong>
+                    <ul>
+                        <li><strong>Windows:</strong> Using <a href="https://chocolatey.org/" target="_blank">Chocolatey</a>:
+                            <pre><code>choco install azure-functions-core-tools-4</code></pre>
+                        </li>
+                        <li><strong>macOS:</strong> Using <a href="https://brew.sh/" target="_blank">Homebrew</a>:
+                            <pre><code>brew tap azure/functions
+brew install azure-functions-core-tools@4</code></pre>
+                        </li>
+                        <li><strong>Linux:</strong> Follow the <a href="https://learn.microsoft.com/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools" target="_blank">official installation guide</a>.</li>
+                    </ul>
+                </li>
+                <li><strong>Navigate to the Azure Functions Project Directory:</strong>
+                    <pre><code>cd bulksend</code></pre>
+                </li>
+                <li><strong>Start the Azure Functions Host:</strong>
+                    <pre><code>func start --verbose</code></pre>
+                    <p><strong>Expected Output:</strong></p>
+                    <pre>
+Host lock lease acquired by instance ID '00000000000000000000000039564EDC'.
+Executed 'RedisEmailConsumerHttpTrigger' (Failed, Id=64e0f8c4-fb0d-44a9-bab9-863280fed446, Duration=134ms)
+System.Private.CoreLib: Exception has been thrown by the target of an invocation. SendBulkSend: JSON file not found: Config/config.json.
+                    </pre>
+                    <p><em>Note:</em> The above output indicates an error where <code>config.json</code> was not found. Ensure that the configuration files are correctly placed and the paths are accurate.</p>
+                </li>
+            </ol>
+
+            <h3>4. Troubleshooting</h3>
+            <ul>
+                <li><strong>JSON File Not Found Error:</strong>
+                    <p>Ensure that all JSON configuration files are present in the <code>Config</code> directory and that the application has the correct file paths to access them.</p>
+                </li>
+                <li><strong>Redis Connection Issues:</strong>
+                    <p>Verify that the Redis server is running and accessible via the connection string provided in <code>config.json</code>.</p>
+                </li>
+                <li><strong>SendGrid API Issues:</strong>
+                    <p>Ensure that the SendGrid API key is valid and has the necessary permissions. Also, verify that the sender email is verified in SendGrid.</p>
+                </li>
+            </ul>
+            <hr>
+        </section>
+
+        <!-- Extending the Application -->
+        <section id="extending-the-application" class="mb-5">
+            <h2>Extending the Application</h2>
+            
+            <h3>Adding SMS and Notifications</h3>
+            <p>To extend the BulkSend application to handle SMS and notifications, follow these steps:</p>
+            <ol>
+                <li><strong>Update Configuration Files:</strong>
+                    <ul>
+                        <li><strong>Add Twilio Configuration:</strong>
+                            <p>Update <code>config.json</code> to include Twilio settings.</p>
+                            <pre><code>{
+  "Redis": {
+    "ConnectionString": "bulkmessages.redis.cache.windows.net:6380,password=mtRh8pkazc0GOwgYS64r1pJzIe0pQHkrfAzCaKruBn4=,ssl=True",
+    "QueueName": "emailTasks"
+  },
+  "SendGrid": {
+    "ApiKey": "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"
+  },
+  "Twilio": {
+    "AccountSid": "your_twilio_account_sid",
+    "AuthToken": "your_twilio_auth_token",
+    "FromPhoneNumber": "+1234567890"
+  }
+}</code></pre>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Create SMS Components:</strong>
+                    <ul>
+                        <li><strong>SMSTask Class:</strong>
+                            <p>Define a class to represent SMS tasks.</p>
+                            <pre><code>public class SMSTask
+{
+    public string[] PhoneNumbers { get; set; }
+    public string Message { get; set; }
+}</code></pre>
+                        </li>
+                        <li><strong>SMSSender Class:</strong>
+                            <p>Implement functionality to send SMS via Twilio.</p>
+                            <pre><code>using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
+using System;
+using System.Threading.Tasks;
+
+public class SMSSender
+{
+    private readonly string _accountSid;
+    private readonly string _authToken;
+    private readonly string _fromPhoneNumber;
+
+    public SMSSender(string accountSid, string authToken, string fromPhoneNumber)
+    {
+        _accountSid = accountSid;
+        _authToken = authToken;
+        _fromPhoneNumber = fromPhoneNumber;
+        TwilioClient.Init(_accountSid, _authToken);
+    }
+
+    public async Task SendSMSAsync(string toPhoneNumber, string message)
+    {
+        var to = new PhoneNumber(toPhoneNumber);
+        var from = new PhoneNumber(_fromPhoneNumber);
+
+        var msg = await MessageResource.CreateAsync(
+            to: to,
+            from: from,
+            body: message
+        );
+
+        Console.WriteLine($"SMS sent to {toPhoneNumber}: SID {msg.Sid}");
+    }
+}</code></pre>
+                        </li>
+                        <li><strong>Update RedisConsumer to Handle SMSTasks:</strong>
+                            <p>Modify <code>RedisConsumer</code> to recognize and process SMS tasks.</p>
+                            <pre><code>public class RedisConsumer
+{
+    // Existing members...
+
+    public async Task StartConsuming(string senderEmail, string senderName, string subject, string content)
+    {
+        // Existing code...
+
+        while (true)
+        {
+            var serializedTask = await db.ListLeftPopAsync(_queueName);
+
+            if (!serializedTask.IsNullOrEmpty)
+            {
+                if (IsEmailTask(serializedTask))
+                {
+                    await ProcessEmailTaskAsync(serializedTask, senderEmail, senderName, subject, content);
+                }
+                else if (IsSMSTask(serializedTask))
+                {
+                    await ProcessSMSTaskAsync(serializedTask);
+                }
+            }
+            else
+            {
+                // No task found, wait before retrying
+                await Task.Delay(1000);
+            }
+        }
+    }
+
+    private bool IsSMSTask(string serializedTask)
+    {
+        return serializedTask.Contains("PhoneNumbers");
+    }
+
+    private async Task ProcessSMSTaskAsync(string serializedTask)
+    {
+        try
+        {
+            var task = JsonSerializer.Deserialize&lt;SMSTask&gt;(serializedTask);
+            if (task != null && task.PhoneNumbers != null && task.PhoneNumbers.Length > 0)
+            {
+                var smsSender = new SMSSender(_twilioAccountSid, _twilioAuthToken, _twilioFromPhoneNumber);
+                foreach (var phoneNumber in task.PhoneNumbers)
+                {
+                    await smsSender.SendSMSAsync(phoneNumber, task.Message);
+                }
+            }
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Failed to deserialize SMS task: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing SMS task: {ex.Message}");
+        }
+    }
+
+    // Existing SendEmails method...
+}</code></pre>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Update Entry Points to Support SMS:</strong>
+                    <ul>
+                        <li><strong>Console Application:</strong>
+                            <pre><code>// Example: Enqueue SMS Tasks
+var smsTask = new SMSTask
+{
+    PhoneNumbers = new string[] { "+1234567890", "+0987654321" },
+    Message = "Hello! This is a test SMS from BulkSend."
+};
+producer.PublishSMSTask(smsTask);</code></pre>
+                        </li>
+                        <li><strong>Azure Function:</strong>
+                            <p>Modify the HTTP trigger to accept parameters for SMS tasks or define separate triggers as needed.</p>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Update RedisProducer to Handle SMSTasks:</strong>
+                    <pre><code>public class RedisProducer
+{
+    // Existing members...
+
+    public void PublishSMSTask(SMSTask smsTask)
+    {
+        var db = _redis.GetDatabase();
+
+        var serializedTask = JsonSerializer.Serialize(smsTask);
+
+        db.ListRightPush(_queueName, serializedTask);
+
+        Console.WriteLine($"Published SMS task to Redis: {serializedTask}");
+    }
+}</code></pre>
+                </li>
+            </ol>
+
+            <h3>Future Extensions: Notifications</h3>
+            <p><strong>Objective:</strong> Integrate a notification system (e.g., push notifications) to enhance the application's communication capabilities.</p>
+            <ol>
+                <li><strong>Define Notification Task Structure:</strong>
+                    <pre><code>public class NotificationTask
+{
+    public string[] DeviceTokens { get; set; }
+    public string Title { get; set; }
+    public string Message { get; set; }
+}</code></pre>
+                </li>
+                <li><strong>Implement Notification Sender:</strong>
+                    <p>Utilize a service like Firebase Cloud Messaging (FCM) or similar.</p>
+                    <pre><code>using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
+using System;
+using System.Threading.Tasks;
+
+public class NotificationSender
+{
+    public NotificationSender(string serviceAccountPath)
+    {
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(serviceAccountPath),
+        });
+    }
+
+    public async Task SendNotificationAsync(string[] deviceTokens, string title, string message)
+    {
+        var notification = new Notification
+        {
+            Title = title,
+            Body = message
+        };
+
+        var messageToSend = new MulticastMessage()
+        {
+            Tokens = deviceTokens,
+            Notification = notification
+        };
+
+        var response = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(messageToSend);
+
+        Console.WriteLine($"Successfully sent {response.SuccessCount} notifications; {response.FailureCount} failures.");
+    }
+}</code></pre>
+                </li>
+                <li><strong>Update RedisConsumer to Handle NotificationTasks:</strong>
+                    <pre><code>public class RedisConsumer
+{
+    // Existing members...
+
+    public async Task StartConsuming(string senderEmail, string senderName, string subject, string content)
+    {
+        // Existing code...
+
+        while (true)
+        {
+            var serializedTask = await db.ListLeftPopAsync(_queueName);
+
+            if (!serializedTask.IsNullOrEmpty)
+            {
+                if (IsEmailTask(serializedTask))
+                {
+                    await ProcessEmailTaskAsync(serializedTask, senderEmail, senderName, subject, content);
+                }
+                else if (IsSMSTask(serializedTask))
+                {
+                    await ProcessSMSTaskAsync(serializedTask);
+                }
+                else if (IsNotificationTask(serializedTask))
+                {
+                    await ProcessNotificationTaskAsync(serializedTask);
+                }
+            }
+            else
+            {
+                // No task found, wait before retrying
+                await Task.Delay(1000);
+            }
+        }
+    }
+
+    private bool IsNotificationTask(string serializedTask)
+    {
+        return serializedTask.Contains("DeviceTokens");
+    }
+
+    private async Task ProcessNotificationTaskAsync(string serializedTask)
+    {
+        try
+        {
+            var task = JsonSerializer.Deserialize&lt;NotificationTask&gt;(serializedTask);
+            if (task != null && task.DeviceTokens != null && task.DeviceTokens.Length > 0)
+            {
+                var notificationSender = new NotificationSender("path_to_service_account.json");
+                await notificationSender.SendNotificationAsync(task.DeviceTokens, task.Title, task.Message);
+            }
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Failed to deserialize Notification task: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing Notification task: {ex.Message}");
+        }
+    }
+
+    // Existing methods...
+}</code></pre>
+                </li>
+                <li><strong>Update RedisProducer to Publish NotificationTasks:</strong>
+                    <pre><code>public class RedisProducer
+{
+    // Existing members...
+
+    public void PublishNotificationTask(NotificationTask notificationTask)
+    {
+        var db = _redis.GetDatabase();
+
+        var serializedTask = JsonSerializer.Serialize(notificationTask);
+
+        db.ListRightPush(_queueName, serializedTask);
+
+        Console.WriteLine($"Published Notification task to Redis: {serializedTask}");
+    }
+}</code></pre>
+                </li>
+                <li><strong>Update Entry Points to Support Notification Tasks:</strong>
+                    <ul>
+                        <li><strong>Console Application:</strong>
+                            <pre><code>// Example: Enqueue Notification Tasks
+var notificationTask = new NotificationTask
+{
+    DeviceTokens = new string[] { "token1", "token2" },
+    Title = "Welcome",
+    Message = "Thank you for joining our service!"
+};
+producer.PublishNotificationTask(notificationTask);</code></pre>
+                        </li>
+                        <li><strong>Azure Function:</strong>
+                            <p>Modify the HTTP trigger to accept notification task details or create separate triggers for notification tasks.</p>
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Future Extensions: Webhooks, Retry Mechanisms, and Dead Letter Queues</h3>
+            <ul>
+                <li><strong>Webhooks:</strong>
+                    <p>Implement webhooks to notify external systems about the status of email/SMS/notification deliveries.</p>
+                </li>
+                <li><strong>Retry Mechanisms:</strong>
+                    <p>Enhance resilience by implementing sophisticated retry policies using Polly or similar libraries to handle transient failures.</p>
+                </li>
+                <li><strong>Dead Letter Queues (DLQ):</strong>
+                    <p>Introduce DLQs to handle tasks that consistently fail after multiple retry attempts, ensuring that problematic tasks are isolated and can be reviewed or reprocessed manually.</p>
+                </li>
+            </ul>
+            <hr>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" class="mb-5">
+            <h2>Conclusion</h2>
+            <p>The <strong>BulkSend</strong> application is a robust solution for sending bulk emails, with scalable architecture facilitated by Azure Functions and Redis. Its modular design allows for easy extensions, such as integrating SMS and notification services, ensuring that the application can evolve to meet diverse communication needs. By adhering to best practices in configuration management, dependency injection, and error handling, BulkSend ensures reliability and maintainability, making it well-suited for production environments and future enhancements.</p>
+            <p>For further enhancements, consider integrating additional communication channels, implementing advanced monitoring and logging, and optimizing performance based on usage patterns and feedback.</p>
+            <hr>
+        </section>
+
+        <!-- Download the Project -->
+        <section id="download-the-project" class="mb-5 text-center">
+            <h2>Download the Project</h2>
+            <p>Ready to explore the <strong>BulkSend</strong> application? Click the button below to download the complete project from GitHub.</p>
+            <a href="https://github.com/mjaffry01/bulksend/archive/refs/heads/master.zip" class="btn btn-primary btn-lg" target="_blank">
+                <i class="bi bi-download"></i> Download Project
+            </a>
+            
+            <hr>
+        </section>
+
+        <!-- Appendix -->
+        <section id="appendix" class="mb-5">
+            <h2>Appendix</h2>
+            
+            <h3>Sample Configuration Files</h3>
+            <h4>config.json</h4>
+            <pre>
+<code>{
+  "Redis": {
+    "ConnectionString": "bulkmessages.redis.cache.windows.net:6380,password=mtRh8pkazc0GOwgYS64r1pJzIe0pQHkrfAzCaKruBn4=,ssl=True",
+    "QueueName": "emailTasks"
+  },
+  "SendGrid": {
+    "ApiKey": "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"
+  },
+  "Twilio": {
+    "AccountSid": "your_twilio_account_sid",
+    "AuthToken": "your_twilio_auth_token",
+    "FromPhoneNumber": "+1234567890"
+  },
+  "Firebase": {
+    "ServiceAccountPath": "path_to_service_account.json"
+  }
+}</code>
+            </pre>
+
+            <h4>sender.json</h4>
+            <pre>
+<code>{
+  "SenderEmail": "mjaffry014@gmail.com",
+  "SenderName": "Md Ali"
+}</code>
+            </pre>
+
+            <h4>template.json</h4>
+            <pre>
+<code>{
+  "Subject": "Welcome to Our Service",
+  "ContentTemplate": "Dear {{salutation}},\n\nWe are thrilled to have you on board!\n\nThank you,\nThe Team"
+}</code>
+            </pre>
+
+            <h4>recipients.json</h4>
+            <pre>
+<code>[
+  {
+    "Email": "mjaffry02@gmail.com",
+    "Salutation": "Mr. Ali"
+  },
+  {
+    "Email": "mjaffry014@gmail.com",
+    "Salutation": "Dr. Jaffrey"
+  },
+  {
+    "Email": "mjaffry04@outlook.com",
+    "Salutation": "Ms. Fatima"
+  }
+]</code>
+            </pre>
+            <hr>
+        </section>
+
+        <!-- Glossary -->
+        <section id="glossary" class="mb-5">
+            <h2>Glossary</h2>
+            <ul>
+                <li><strong>Azure Functions:</strong> A serverless compute service that enables code execution triggered by events.</li>
+                <li><strong>Redis:</strong> An in-memory data structure store used as a database, cache, and message broker.</li>
+                <li><strong>SendGrid:</strong> A cloud-based email delivery service.</li>
+                <li><strong>Twilio:</strong> A cloud communications platform for building SMS, Voice &amp; Messaging applications.</li>
+                <li><strong>Polly:</strong> A .NET resilience and transient-fault-handling library.</li>
+                <li><strong>Firebase Cloud Messaging (FCM):</strong> A cross-platform messaging solution that lets you reliably deliver messages at no cost.</li>
+                <li><strong>UML:</strong> Unified Modeling Language, a standardized modeling language used to visualize system design.</li>
+            </ul>
+            <hr>
+        </section>
+
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Smooth Scrolling -->
+    <script>
+        document.querySelectorAll('a.nav-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
